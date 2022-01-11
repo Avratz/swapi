@@ -1,7 +1,11 @@
 import React from 'react'
 import { mergeClasses } from '~/utils'
-import { ReactChildren } from '~/types'
-import { OnlyDestructiveButton, OnlyPrimaryButton, OnlySecondaryButton } from '../../types/Button'
+import {
+	ReactChildren,
+	OnlyDestructiveButton,
+	OnlyPrimaryButton,
+	OnlySecondaryButton,
+} from '~/types'
 
 type ButtonOwnProps<E extends React.ElementType = React.ElementType> = ReactChildren & {
 	as?: E

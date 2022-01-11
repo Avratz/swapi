@@ -1,16 +1,16 @@
-export type ReactChildren = { children: React.ReactNode }
-export type Headings = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-export type TextSize =
-	| 'text-xs'
-	| 'text-sm'
-	| 'text-base'
-	| 'text-lg'
-	| 'text-xl'
-	| 'text-2xl'
-	| 'text-3xl'
-	| 'text-4xl'
-	| 'text-5xl'
-	| 'text-6xl'
-	| 'text-7xl'
-	| 'text-8xl'
-	| 'text-9xl'
+import { Coin, Wallet, Wallets } from './Core'
+import { Headings, TextSize } from './Headings'
+import { OnlyPrimaryButton, OnlySecondaryButton, OnlyDestructiveButton } from './Button'
+import { ReactChildren } from './React'
+
+export type {
+	Coin,
+	Wallet,
+	Wallets,
+	Headings,
+	TextSize,
+	OnlyPrimaryButton,
+	OnlySecondaryButton,
+	OnlyDestructiveButton,
+	ReactChildren,
+}
