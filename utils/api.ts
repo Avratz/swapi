@@ -10,7 +10,7 @@ type OthersParamsType = Omit<FetchType, 'method' | 'body'>
 export class Api {
 	constructor(private readonly url: string) {}
 
-	get(path: string, params: {}, othersParams: OthersParamsType = {}) {
+	get<T extends {}>(path: string, params: T, othersParams: OthersParamsType = {}) {
 		const urlParams = new URLSearchParams(params)
 		return fetch(`${this.url}/${path}?${urlParams}`, {
 			method: 'GET',
