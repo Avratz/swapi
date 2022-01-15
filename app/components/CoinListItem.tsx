@@ -3,7 +3,7 @@ import Box from './Box'
 import Heading from './Heading'
 import Image from './Image'
 
-import { Wallet } from '~/types'
+import type { Wallet } from '~/types'
 
 type CoinListItemType = {
 	wallet: Wallet
@@ -14,10 +14,11 @@ function CoinListItem({ wallet, showPrice = true }: CoinListItemType) {
 	return (
 		<li className='flex justify-between py-2'>
 			<Image
-				className='bg-primary-100 w-[44px] h-[44px] rounded-full'
+				className='w-[44px] h-[44px] rounded-full flex justify-center items-center'
 				src={wallet.coin.image}
-				width={44}
-				height={44}
+				alt=''
+				width={33}
+				height={33}
 				layout='fixed'
 			/>
 			<Box className='mr-auto'>
@@ -29,13 +30,15 @@ function CoinListItem({ wallet, showPrice = true }: CoinListItemType) {
 				</Heading>
 			</Box>
 			{showPrice ? (
-				<Box className='ml-auto'>
+				<Box className='ml-auto flex flex-col justify-center'>
 					<Heading as='h4' className='text-right text-primary-500'>
-						{wallet.balance * wallet.coin.currentPrice}
+						USD {wallet.total}
 					</Heading>
-					<Heading as='h6' className='text-right'>
-						{wallet.balance}
-					</Heading>
+					{wallet.balance !== 0 ? (
+						<Heading as='h6' className='text-right'>
+							{wallet.balance}
+						</Heading>
+					) : null}
 				</Box>
 			) : null}
 		</li>

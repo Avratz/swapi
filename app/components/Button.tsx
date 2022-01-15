@@ -1,6 +1,6 @@
 import React from 'react'
 import { mergeClasses } from '~/utils'
-import {
+import type {
 	ReactChildren,
 	OnlyDestructiveButton,
 	OnlyPrimaryButton,

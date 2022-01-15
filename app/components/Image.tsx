@@ -1,9 +1,12 @@
 import React from 'react'
 import NextImg, { ImageProps } from 'next/image'
 
-const Image = (props : ImageProps) => {
+const Image = ({className, ...otherProps} : ImageProps) => {
   return (
-    <NextImg {...props}/>
+    <span className={className}>
+      <NextImg {...otherProps}/>
+    </span>
+    
   )
 }
 
