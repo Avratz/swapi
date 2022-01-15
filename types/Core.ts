@@ -6,9 +6,8 @@ export type Coin = {
 	image: string
 }
 
-export type Wallets = Wallet[]
-
 export type Wallet = {
 	coin: Coin
 	balance: number
+	total: number
 }
