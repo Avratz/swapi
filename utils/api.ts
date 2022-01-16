@@ -1,3 +1,6 @@
+import { SWRResponse } from 'swr'
+import reporting from '~/reporting'
+
 type FetchType = {
 	method?: 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'PUT'
 	body?: BodyInit | null
@@ -5,53 +8,92 @@ type FetchType = {
 	mode?: RequestMode
 }
 
-type OthersParamsType = Omit<FetchType, 'method' | 'body'>
+type ParamsType = Omit<FetchType, 'method'>
+
+type getParamsType<T extends {}> = Omit<FetchType, 'method' | 'body'> & { body?: T }
 
 export class Api {
-	constructor(private readonly url: string) {}
-
-	get<T extends {}>(path: string, params: T, othersParams: OthersParamsType = {}) {
-		const urlParams = new URLSearchParams(params)
-		return fetch(`${this.url}/${path}?${urlParams}`, {
-			method: 'GET',
-			body: null,
-			...othersParams,
-		})
+	constructor(private readonly url: string) {
+		this.get = this.get.bind(this)
+		this.post = this.post.bind(this)
+		this.patch = this.patch.bind(this)
+		this.delete = this.delete.bind(this)
+		this.put = this.put.bind(this)
 	}
 
-	post(path: string, body: BodyInit, othersParams: OthersParamsType = {}) {
+	get<T extends { [key: string]: number | boolean | string }>(
+		path: string,
+		params: getParamsType<T>,
+	) {
+		const { body } = params
+
+		const query =
+			body !== undefined
+				? Object.entries(body)
+						.reduce((acc: string[], [key, value]) => {
+							acc.push(`${key}=${encodeURIComponent(value)}`)
+							return acc
+						}, [])
+						.join('&')
+				: undefined
+
+		const url = `${this.url}/${path}${query !== undefined ? '?' + query : ''}`
+		return fetch(url, {
+			method: 'GET',
+			...params,
+			body: null,
+		})
+			.then((res) => res.json())
+			.catch(reporting)
+	}
+
+	post(path: string, params: ParamsType = {}) {
 		return fetch(`${this.url}/${path}`, {
 			method: 'POST',
-			body,
-			...othersParams,
+			...params,
 		})
+			.then((res) => res.json())
+			.catch(reporting)
 	}
 
-	patch(path: string, body: BodyInit, othersParams: OthersParamsType = {}) {
+	patch(path: string, params: ParamsType = {}) {
 		return fetch(`${this.url}/${path}`, {
 			method: 'PATCH',
-			body,
-			...othersParams,
+			...params,
 		})
+			.then((res) => res.json())
+			.catch(reporting)
 	}
 
-	delete(path: string, body: BodyInit, othersParams: OthersParamsType = {}) {
+	delete(path: string, params: ParamsType = {}) {
 		return fetch(`${this.url}/${path}`, {
 			method: 'DELETE',
-			body,
-			...othersParams,
+			...params,
 		})
+			.then((res) => res.json())
+			.catch(reporting)
 	}
 
-	put(path: string, body: BodyInit, othersParams: OthersParamsType = {}) {
+	put(path: string, params: ParamsType = {}) {
 		return fetch(`${this.url}/${path}`, {
 			method: 'PUT',
-			body,
-			...othersParams,
+			...params,
 		})
+			.then((res) => res.json())
+			.catch(reporting)
 	}
 }
 
 const createApi = (url: string) => new Api(url)
+
+export function processSWRResponse<T>(SWRResponse: SWRResponse<T>) {
+	const { data, error } = SWRResponse
+
+	return {
+		data,
+		isLoading: !error && !data,
+		isError: error,
+	}
+}
 
 export default createApi

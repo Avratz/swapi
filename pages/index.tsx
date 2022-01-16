@@ -1,6 +1,7 @@
 import React from 'react'
 import { GetServerSideProps } from 'next'
-import apiCoinGecko from '~/coingecko/server'
+import apiCoinGeckoClient from '~/coingecko/client'
+import apiCoinGeckoServer from '~/coingecko/server'
 import DefaultLayout from '~/app/layout/Default'
 
 import type { Wallet } from '~/types'
@@ -9,6 +10,14 @@ import HomeScreen from '~/app/screens/Home'
 import WalletsProvider from '~/app/context'
 
 export default function Home({ wallets }: { wallets: Wallet[] }) {
+	const per_page = 10
+	const vs_currency = 'usd'
+
+	const { data, isLoading, isError } = apiCoinGeckoClient.coins.useMarkets({
+		vs_currency,
+		per_page,
+	})
+
 	return (
 		<DefaultLayout headerExpanded>
 			<WalletsProvider initialValue={wallets}>
@@ -20,10 +29,12 @@ export default function Home({ wallets }: { wallets: Wallet[] }) {
 
 export const getServerSideProps: GetServerSideProps = async () => {
 	try {
-		const per_page = 50
+		const per_page = 10
 		const vs_currency = 'usd'
-		const res = await apiCoinGecko.coins.getMarkets({ vs_currency, per_page })
-		const data: ApiCoinsMarketResponse[] = await res.json()
+		const data: ApiCoinsMarketResponse[] = await apiCoinGeckoServer.coins.getMarkets({
+			vs_currency,
+			per_page,
+		})
 
 		const wallets = data.map(function (coin) {
 			const wallet: Wallet = {
