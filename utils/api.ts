@@ -1,16 +1,25 @@
 import { SWRResponse } from 'swr'
 import reporting from '~/reporting'
 
-type FetchType = {
+type FetchType<T extends BodyInit> = {
 	method?: 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'PUT'
-	body?: BodyInit | null
+	body?: T
 	headers?: HeadersInit
 	mode?: RequestMode
 }
 
-type ParamsType = Omit<FetchType, 'method'>
+type ParamsType<T extends BodyInit> = Omit<FetchType<T>, 'method'>
 
-type getParamsType<T extends {}> = Omit<FetchType, 'method' | 'body'> & { body?: T }
+type getParamsType<T extends {}> = Omit<FetchType<never>, 'method' | 'body'> & { body?: T }
+
+function processFetch<T>(fetchCB: () => Promise<Response>): Promise<T> {
+	return fetchCB()
+		.then((res: Response) => res.json())
+		.catch((err: any) => {
+			reporting(err)
+			throw err
+		})
+}
 
 export class Api {
 	constructor(private readonly url: string) {
@@ -21,10 +30,10 @@ export class Api {
 		this.put = this.put.bind(this)
 	}
 
-	get<T extends { [key: string]: number | boolean | string }>(
+	get<T extends { [key: string]: number | boolean | string }, U>(
 		path: string,
 		params: getParamsType<T>,
-	) {
+	): Promise<U> {
 		const { body } = params
 
 		const query =
@@ -38,53 +47,52 @@ export class Api {
 				: undefined
 
 		const url = `${this.url}/${path}${query !== undefined ? '?' + query : ''}`
-		return fetch(url, {
-			method: 'GET',
-			...params,
-			body: null,
-		})
-			.then((res) => res.json())
-			.catch(reporting)
+
+		return processFetch<U>(() =>
+			fetch(url, {
+				method: 'GET',
+				...params,
+				body: null,
+			}),
+		)
 	}
 
-	post(path: string, params: ParamsType = {}) {
-		return fetch(`${this.url}/${path}`, {
-			method: 'POST',
-			...params,
-		})
-			.then((res) => res.json())
-			.catch(reporting)
+	post<T extends BodyInit, U>(path: string, params: ParamsType<T> = {}) {
+		return processFetch<U>(() =>
+			fetch(`${this.url}/${path}`, {
+				method: 'POST',
+				...params,
+			}),
+		)
 	}
 
-	patch(path: string, params: ParamsType = {}) {
-		return fetch(`${this.url}/${path}`, {
-			method: 'PATCH',
-			...params,
-		})
-			.then((res) => res.json())
-			.catch(reporting)
+	patch<T extends BodyInit, U>(path: string, params: ParamsType<T> = {}) {
+		return processFetch<U>(() =>
+			fetch(`${this.url}/${path}`, {
+				method: 'PATCH',
+				...params,
+			}),
+		)
 	}
 
-	delete(path: string, params: ParamsType = {}) {
-		return fetch(`${this.url}/${path}`, {
-			method: 'DELETE',
-			...params,
-		})
-			.then((res) => res.json())
-			.catch(reporting)
+	delete<T extends BodyInit, U>(path: string, params: ParamsType<T> = {}) {
+		return processFetch<U>(() =>
+			fetch(`${this.url}/${path}`, {
+				method: 'DELETE',
+				...params,
+			}),
+		)
 	}
 
-	put(path: string, params: ParamsType = {}) {
-		return fetch(`${this.url}/${path}`, {
-			method: 'PUT',
-			...params,
-		})
-			.then((res) => res.json())
-			.catch(reporting)
+	put<T extends BodyInit, U>(path: string, params: ParamsType<T> = {}) {
+		return processFetch<U>(() =>
+			fetch(`${this.url}/${path}`, {
+				method: 'PUT',
+				...params,
+			}),
+		)
 	}
 }
-
-const createApi = (url: string) => new Api(url)
 
 export function processSWRResponse<T>(SWRResponse: SWRResponse<T>) {
 	const { data, error } = SWRResponse
@@ -96,4 +104,5 @@ export function processSWRResponse<T>(SWRResponse: SWRResponse<T>) {
 	}
 }
 
+const createApi = (url: string) => new Api(url)
 export default createApi

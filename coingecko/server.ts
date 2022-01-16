@@ -1,10 +1,25 @@
-import { ApiCoinsMarketParams, ApiCoinsSimpleParams } from './types'
+import { ApiCoinsMarketParams, ApiCoinsMarketResponse, ApiCoinsSimpleParams } from './types'
 import coinGecko from './api'
+import { Coin, Wallet } from '~/types'
 
 const coins = {
 	baseUrl: 'coins/',
-	getMarkets(params: ApiCoinsMarketParams) {
-		return coinGecko.get(`${this.baseUrl}markets/`, { body: params })
+	async getMarkets(params: ApiCoinsMarketParams) {
+		const data = await coinGecko.get<typeof params, ApiCoinsMarketResponse[]>(
+			`${this.baseUrl}markets/`,
+			{
+				body: params,
+			},
+		)
+		const coins = data.map((c) => {
+			const coin: Coin = {
+				...c,
+				currentPrice: c.current_price,
+			}
+			return coin
+		})
+
+		return coins
 	},
 }
 
